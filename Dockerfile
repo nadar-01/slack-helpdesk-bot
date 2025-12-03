@@ -6,8 +6,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY main.py .
-COPY start.sh .
+COPY app.py .
 
-RUN chmod +x start.sh
+ENV PORT=8080
 
-CMD ["./start.sh"]
+CMD ["python", "app.py"]
