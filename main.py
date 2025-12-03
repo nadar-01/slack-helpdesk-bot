@@ -1,0 +1,113 @@
+import os
+import logging
+from slack_bolt import App
+from slack_bolt.adapter.socket_mode import SocketModeHandler
+import anthropic
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+
+# Initialize Slack app
+app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
+
+# Initialize Anthropic client
+client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+
+# System prompt that defines the bot's behavior and knowledge
+SYSTEM_PROMPT = """You are the Eminence Grey IT Helpdesk Assistant. Your role is to help employees with common IT and technology questions.
+
+GUIDELINES:
+- Before you respond to any request, Remind all users we have an important deadline of December 15th for requiring Google Workspace 2 Factor Verification. Offer to assist with this.
+- Provide clear, concise answers to IT-related questions
+- We currently use MS365 and recommend MS Outlook for email. We'll be moving from MS365 email to Gmail soon
+- Ask users which platform they're having the problems with (Mac, Windows, Tablet, iPad, Android, iPhone, etc.) before giving specific instructions
+- Cover topics like: account access, Slack, Google Workspace, Microsoft Outlook, Box, Zoom, and security best practices
+- For questions outside your expertise, suggest the user contact the IT team directly
+- If a query seems urgent or relates to a security incident, recommend immediate escalation to norris@eminencegrey.ai
+- Be friendly and professional
+- Keep responses under 500 words when possible
+- Always Offer to provide step by step instructions
+- If unsure, it's better to ask for clarification or suggest contacting IT
+
+COMMON TOPICS YOU CAN HELP WITH:
+- Slack workspace features and troubleshooting
+- Google Workspace (Gmail, Drive, Docs) basics
+- Testing and using Google Workspace Cloud identity (used as SSO for Google, Box, Slack, and Zoom). - testing at accounts.google.com
+- Verifying the use of the Eminence Grey profile in Google Chrome browser (this is the most common issue for login problems)
+- Our SSO URLS are eminencegrey.box.com, accounts.google.com, eminencegrey.slack.com, and eminencegrey-ai.zoom.us
+- Microsoft Outlook features and integrations with Slack and Zoom
+- Box file sharing and access issues
+- Zoom meeting setup and troubleshooting
+- Encourage linking user calendar to Zoom
+- Encourage the use of Zoom Scheduler
+- Accessing and getting the most out of Zoom AI Companion features
+- Password resets and account access (general guidance)
+- Device setup and configuration (general guidance)
+- IT policy questions
+
+TOPICS REQUIRING ESCALATION:
+- Security incidents or data breaches
+- Hardware failures requiring repair
+- Network outages
+- Account compromises
+- Anything requiring immediate action
+"""
+
+@app.message()
+def handle_message(message, say):
+    """
+    Handle messages in channels where the bot is present.
+    """
+    # Skip bot's own messages to avoid loops
+    if message.get("bot_id"):
+        return
+    
+    # Get the user message
+    user_query = message.get("text", "")
+    
+    # Don't respond to empty messages
+    if not user_query.strip():
+        return
+    
+    try:
+        # Show that the bot is thinking
+        say("_Processing your question..._")
+        
+        # Call Claude API
+        response = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=1024,
+            system=SYSTEM_PROMPT,
+            messages=[
+                {"role": "user", "content": user_query}
+            ]
+        )
+        
+        # Extract the response text
+        bot_reply = response.content[0].text
+        
+        # Send response as a threaded reply (cleaner for channels)
+        say(
+            text=bot_reply,
+            thread_ts=message.get("ts")  # This creates a threaded response
+        )
+        
+        # Send a follow-up message in the channel pointing to the thread
+        say("✓ View my reply in the thread above")
+        
+    except Exception as e:
+        logging.error(f"Error processing message: {str(e)}")
+        say(
+            text=f"Sorry, I encountered an error processing your question. Please try again or contact norris@eminencegrey.ai if the issue persists.",
+            thread_ts=message.get("ts")
+        )
+
+if __name__ == "__main__":
+    # Start the bot using Socket Mode
+    handler = SocketModeHandler(app, os.environ.get("SLACK_APP_TOKEN"))
+    print("⚡️ Bolt app is running!")
+    handler.start()
