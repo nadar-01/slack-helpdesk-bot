@@ -80,7 +80,7 @@ def handle_message(message, say):
     
     try:
         # Show that the bot is thinking
-        say("_Processing your question..._")
+        say("_Processing your message..._")
         
         # Call Claude API
         response = client.messages.create(
