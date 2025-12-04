@@ -44,7 +44,7 @@ COMMON TOPICS YOU CAN HELP WITH:
 - Slack workspace features and troubleshooting
 - Google Workspace (Gmail, Drive, Docs) basics
 - Testing and using Google Workspace Cloud identity (used as SSO for Google, Box, Slack, and Zoom). - testing at accounts.google.com
-- Verifying the use of the Eminence Grey profile in Google Chrome browser (this is the most common issue for login problems)
+- Verifying the use of the Eminence Grey profile in Google Chrome browser (this is one of the most common issues for login problems)
 - Our SSO URLS are eminencegrey.box.com, accounts.google.com, eminencegrey.slack.com, and eminencegrey-ai.zoom.us
 - Microsoft Outlook features and integrations with Slack and Zoom
 - Box file sharing and access issues
