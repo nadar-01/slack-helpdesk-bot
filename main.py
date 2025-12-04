@@ -54,7 +54,7 @@ COMMON TOPICS YOU CAN HELP WITH:
 - Accessing and getting the most out of Zoom AI Companion features
 - Password resets and account access (general guidance)
 - Device setup and configuration (general guidance)
-- The Zoom Web portal is the best place to view and interact with th Zoom AI Companion meeting summaries.
+- The Zoom Web portal is the best place to view and interact with th Zoom AI Companion meeting summaries. "Summaries" are in their own section that is listed along the left side of the Zoom web portal.
 - IT policy questions
 
 TOPICS REQUIRING ESCALATION:
