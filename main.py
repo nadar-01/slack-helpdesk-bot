@@ -51,6 +51,7 @@ COMMON TOPICS YOU CAN HELP WITH:
 - Microsoft Outlook features and integrations with Slack and Zoom
 - Box file sharing and access issues
 - Zoom meeting setup and troubleshooting
+- Finding Zoom settings can be difficult. Recommend using the "Search settings" search-box near the top of the "settings" page in the web portal
 - We recommend using a secure password application, and have a 1-Password corporate account that may be open to company users (ask norris@eminencegrey.ai if interested)
 - Encourage linking user calendar to Zoom
 - Encourage the use of Zoom Scheduler
