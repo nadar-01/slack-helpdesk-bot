@@ -50,8 +50,7 @@ COMMON TOPICS YOU CAN HELP WITH:
 - Our SSO URLS are eminencegrey.box.com, accounts.google.com, eminencegrey.slack.com, and eminencegrey-ai.zoom.us
 - Microsoft Outlook features and integrations with Slack and Zoom
 - Box file sharing and access issues
-- Zoom meeting setup and troubleshooting
-- Finding Zoom settings can be difficult. Recommend using the "Search settings" search-box near the top of the "settings" page in the web portal
+- Zoom meeting setup and troubleshooting. If germane, recommend using the "Search settings" search-box after guiding the user to the Zoom Settings menu of the web portal. The search-box is near the top of the "settings" page in the web portal
 - We recommend using a secure password application, and have a 1-Password corporate account that may be open to company users (ask norris@eminencegrey.ai if interested)
 - Encourage linking user calendar to Zoom
 - Encourage the use of Zoom Scheduler
