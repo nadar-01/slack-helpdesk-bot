@@ -1,29 +1,35 @@
+"""
+Eminence Grey AI Helpdesk Bot - IMPROVED WITH CONTEXT
+Powered by Claude API and Slack Bolt
+
+This script monitors the #corp-it-helpdesk channel and responds to IT-related questions
+using Claude's intelligence. IMPROVED: Now retains context within threaded conversations.
+
+Requirements:
+- slack-bolt
+- anthropic
+- python-dotenv
+
+Installation:
+pip install slack-bolt anthropic python-dotenv
+"""
+
 import os
 import logging
-from flask import Flask
-import threading
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 import anthropic
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Initialize Slack app
 app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
+anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-# Initialize Anthropic client
-client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-
-# System prompt that defines the bot's behavior and knowledge
-SYSTEM_PROMPT = """You are the Eminence Grey IT Helpdesk Assistant. Your role is to help employees with common IT and technology questions.
-
-CONTACT INFO:
-- For IT support, email: norris@eminencegrey.ai
+# System prompt that guides Claude's behavior
+SYSTEM_PROMPT = """You are the IT Helpdesk Assistant for Eminence Grey. Your role is to help employees with common IT and technology questions.
 
 GUIDELINES:
 - We currently use MS365 business apps, Microsoft Exchange for most email and recommend MS Outlook for email client. We'll be moving from MS365 Exchange email to Gmail sometime soon
@@ -70,10 +76,63 @@ TOPICS REQUIRING ESCALATION:
 - Anything requiring immediate action
 """
 
+def fetch_thread_history(client, channel_id, thread_ts):
+    """
+    Fetch all messages in a thread to provide context to Claude.
+    Returns a list of messages in chronological order.
+    """
+    try:
+        result = client.conversations_replies(
+            channel=channel_id,
+            ts=thread_ts,
+            limit=100  # Fetch up to 100 messages in the thread
+        )
+        return result.get("messages", [])
+    except Exception as e:
+        logger.error(f"Error fetching thread history: {str(e)}")
+        return []
+
+
+def build_conversation_for_claude(thread_messages):
+    """
+    Convert Slack thread messages into a format Claude can understand.
+    Filters out bot messages and structures the conversation chronologically.
+    """
+    messages = []
+    
+    for msg in thread_messages:
+        # Skip bot messages to avoid confusion
+        if msg.get("bot_id"):
+            continue
+        
+        # Determine if it's the user or the bot
+        username = msg.get("username", "User")
+        text = msg.get("text", "")
+        
+        # Skip empty messages
+        if not text.strip():
+            continue
+        
+        # If this is a message from the helpdesk bot itself, mark it as assistant
+        # Otherwise, it's from a user
+        if "helpdesk" in username.lower() or msg.get("app_id"):
+            role = "assistant"
+        else:
+            role = "user"
+        
+        messages.append({
+            "role": role,
+            "content": text
+        })
+    
+    return messages
+
+
 @app.message()
-def handle_message(message, say):
+def handle_message(message, say, client):
     """
     Handle messages in channels where the bot is present.
+    Now includes thread context for multi-turn conversations.
     """
     # Skip bot's own messages to avoid loops
     if message.get("bot_id"):
@@ -90,14 +149,27 @@ def handle_message(message, say):
         # Show that the bot is thinking
         say("_Processing your message..._")
         
-        # Call Claude API
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1024,
-            system=SYSTEM_PROMPT,
-            messages=[
+        # Check if this is a threaded message (reply to a previous message)
+        thread_ts = message.get("thread_ts") or message.get("ts")
+        channel_id = message.get("channel")
+        
+        # Fetch thread history if this is a threaded conversation
+        conversation_messages = []
+        if message.get("thread_ts"):
+            thread_messages = fetch_thread_history(client, channel_id, thread_ts)
+            conversation_messages = build_conversation_for_claude(thread_messages)
+        else:
+            # If it's not a threaded message yet, just use the current message
+            conversation_messages = [
                 {"role": "user", "content": user_query}
             ]
+        
+        # Call Claude API with conversation context
+        response = anthropic_client.messages.create(
+            model="claude-sonnet-4-5-20250929",
+            max_tokens=1024,
+            system=SYSTEM_PROMPT,
+            messages=conversation_messages
         )
         
         # Extract the response text
@@ -106,35 +178,19 @@ def handle_message(message, say):
         # Send response as a threaded reply (cleaner for channels)
         say(
             text=bot_reply,
-            thread_ts=message.get("ts")  # This creates a threaded response
+            thread_ts=thread_ts  # This creates a threaded response
         )
-        
-        # Send a follow-up message in the channel pointing to the thread
-        say("✓ View my reply in the thread above")
         
     except Exception as e:
-        logging.error(f"Error processing message: {str(e)}")
+        logger.error(f"Error processing message: {str(e)}")
         say(
             text=f"Sorry, I encountered an error processing your question. Please try again or contact norris@eminencegrey.ai if the issue persists.",
-            thread_ts=message.get("ts")
+            thread_ts=message.get("thread_ts") or message.get("ts")
         )
 
-# Create Flask app for UptimeRobot pinging
-web_app = Flask(__name__)
-
-@web_app.route('/')
-def ping():
-    return 'Bot is alive!', 200
-
-def run_webserver():
-    web_app.run(host='0.0.0.0', port=8080, debug=False)
 
 if __name__ == "__main__":
-    # Start webserver in background thread
-    web_thread = threading.Thread(target=run_webserver, daemon=True)
-    web_thread.start()
-    
-    # Then start the bot
+    # Start the bot using Socket Mode
     handler = SocketModeHandler(app, os.environ.get("SLACK_APP_TOKEN"))
-    print("⚡️ Bolt app is running!")
+    logger.info("⚡️ Eminence Grey Helpdesk Bot (with context) is running!")
     handler.start()
