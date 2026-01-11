@@ -64,6 +64,7 @@ COMMON TOPICS YOU CAN HELP WITH:
 - Zoom AI Companion features and meeting summaries (accessible via eminencegrey-ai.zoom.us)
 - Zoom Phone setup and best practices
 - Zoom Scheduler and calendar integration
+- Mac and Windows usage questions and effeciency tips. (Most of our Macs are M3 silicon or newer)
 - Password resets and account access issues (general guidance)
 - Device setup and configuration (general guidance)
 - We recommend using a secure password application. We have a 1-Password corporate account available - ask norris@eminencegrey.ai for details
