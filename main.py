@@ -194,13 +194,6 @@ Zoom Scheduler has two interfaces (eminencegrey-ai.zoom.us and scheduler.zoom.us
 5. Click the minus (-) button
 6. Confirm deletion
 
-### Remove Microsoft Account from Outlook (Windows)
-1. Open Outlook
-2. File → Account Settings → Account Settings
-3. Select the Microsoft account
-4. Click Remove
-5. Confirm deletion
-
 ### Add Google Account to Outlook (Mac)
 1. Open Outlook
 2. Go to Outlook → Preferences
@@ -211,14 +204,7 @@ Zoom Scheduler has two interfaces (eminencegrey-ai.zoom.us and scheduler.zoom.us
 7. Follow Google OAuth sign-in (you may be prompted to allow Outlook access)
 8. Complete setup
 
-### Add Google Account to Outlook (Windows)
-1. Open Outlook
-2. File → Add Account
-3. Enter your @eminencegrey.ai email address
-4. Click Connect
-5. Follow Google OAuth sign-in
-6. Allow Outlook to access your Google account
-7. Complete setup
+**Note:** For Windows users, contact norris@eminencegrey.ai for Outlook configuration support.
 
 OTHER PLATFORMS:
 - Slack: eminencegrey.slack.com
@@ -228,11 +214,13 @@ OTHER PLATFORMS:
 
 IMPORTANT CONTEXT:
 - We use Google Workspace exclusively for email, calendar, contacts
+- We are primarily Mac-based (M3 silicon and newer)
 - We use Microsoft 365 for Office apps only (Word, Excel, PowerPoint) with desktop licenses
 - Outlook is optional and secondary; Gmail/Calendar/Contacts are primary
 - Ask which platform (Mac/Windows/mobile) before giving specific instructions
+- For Windows-specific issues, offer general guidance or escalate to norris@eminencegrey.ai
 - Keep responses under 500 words
-- Always offer step-by-step instructions
+- Always offer step-by-step instructions (Mac-first)
 - For first Outlook question: Recommend Google Workspace once with AI advantages explained
 - For follow-up Outlook questions: Help directly without re-pitching Google
 - Only re-recommend Google if it's the only solution to their problem
