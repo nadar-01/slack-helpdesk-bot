@@ -15,20 +15,38 @@ pip install slack-bolt anthropic python-dotenv
 """
 
 import os
+import sys
 import logging
-from flask import Flask
 import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 import anthropic
 from dotenv import load_dotenv
 
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
 load_dotenv()
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+logger = logging.getLogger(__name__)
 
-app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
-client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+# Validate required environment variables at startup
+REQUIRED_ENV_VARS = ["SLACK_BOT_TOKEN", "SLACK_APP_TOKEN", "ANTHROPIC_API_KEY"]
+missing = [v for v in REQUIRED_ENV_VARS if not os.environ.get(v)]
+if missing:
+    logger.error(f"Missing required environment variables: {', '.join(missing)}")
+    sys.exit(1)
 
+app = App(token=os.environ["SLACK_BOT_TOKEN"])
+anthropic_client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+
+# ---------------------------------------------------------------------------
+# System prompt
+# ---------------------------------------------------------------------------
 SYSTEM_PROMPT = """You are the Eminence Grey IT Helpdesk Assistant.
 
 CONTACT INFO: norris@eminencegrey.ai
@@ -267,6 +285,23 @@ ESCALATE TO: norris@eminencegrey.ai for:
 - Migration questions or new user onboarding
 - Users who insist on Outlook despite recommendations (note: some power users may have legacy workflows)"""
 
+# ---------------------------------------------------------------------------
+# Thread history helpers
+# ---------------------------------------------------------------------------
+BOT_USER_ID = None  # Resolved at startup
+
+
+def resolve_bot_user_id():
+    """Look up the bot's own Slack user ID so we can identify our messages in threads."""
+    global BOT_USER_ID
+    try:
+        auth = app.client.auth_test()
+        BOT_USER_ID = auth.get("user_id")
+        logger.info(f"Bot user ID resolved: {BOT_USER_ID}")
+    except Exception as e:
+        logger.warning(f"Could not resolve bot user ID: {e}")
+
+
 def fetch_thread_history(slack_client, channel_id, thread_ts):
     """Fetch all messages in a thread to provide context to Claude."""
     try:
@@ -277,83 +312,152 @@ def fetch_thread_history(slack_client, channel_id, thread_ts):
         )
         return result.get("messages", [])
     except Exception as e:
-        logging.error(f"Error fetching thread history: {str(e)}")
+        logger.error(f"Error fetching thread history: {e}")
         return []
 
+
 def build_conversation_for_claude(thread_messages):
-    """Convert Slack thread messages into format Claude can understand."""
+    """Convert Slack thread messages into Claude's messages format.
+
+    Bot messages become "assistant"; everything else becomes "user".
+    """
     messages = []
-    
+
     for msg in thread_messages:
-        # Skip bot messages
-        if msg.get("bot_id"):
-            continue
-        
         text = msg.get("text", "").strip()
         if not text:
             continue
-        
-        # Determine if from user or bot
-        if "helpdesk" in msg.get("username", "").lower() or msg.get("app_id"):
-            role = "assistant"
-        else:
-            role = "user"
-        
-        messages.append({
-            "role": role,
-            "content": text
-        })
-    
-    return messages
 
+        # Identify our own bot messages by user ID or bot_id
+        is_bot = (
+            msg.get("user") == BOT_USER_ID
+            or msg.get("bot_id") is not None
+        )
+
+        role = "assistant" if is_bot else "user"
+
+        # Skip transient indicator messages we posted
+        if is_bot and text in ("_Processing your request..._",):
+            continue
+
+        messages.append({"role": role, "content": text})
+
+    # Claude requires the conversation to start with a user message
+    while messages and messages[0]["role"] != "user":
+        messages.pop(0)
+
+    # Claude requires alternating roles — merge consecutive same-role messages
+    merged = []
+    for m in messages:
+        if merged and merged[-1]["role"] == m["role"]:
+            merged[-1]["content"] += "\n" + m["content"]
+        else:
+            merged.append(m)
+
+    return merged
+
+
+# ---------------------------------------------------------------------------
+# Message handler
+# ---------------------------------------------------------------------------
 @app.message()
-def handle_message(message, say, client_slack):
+def handle_message(message, say, client):
+    """Respond to every non-bot message in channels the bot is in."""
     if message.get("bot_id"):
         return
-    user_query = message.get("text", "")
-    if not user_query.strip():
+
+    user_query = message.get("text", "").strip()
+    if not user_query:
         return
+
+    thread_ts = message.get("thread_ts") or message.get("ts")
+    channel_id = message.get("channel")
+
+    # Post a processing indicator inside the thread
+    indicator = None
     try:
-        say("_Processing your message..._")
-        
-        # Get thread context if this is a threaded message
-        thread_ts = message.get("thread_ts") or message.get("ts")
-        channel_id = message.get("channel")
-        
-        conversation_messages = []
+        indicator = client.chat_postMessage(
+            channel=channel_id,
+            thread_ts=thread_ts,
+            text="_Processing your request..._"
+        )
+    except Exception as e:
+        logger.warning(f"Could not post processing indicator: {e}")
+
+    try:
+        # Build conversation context
         if message.get("thread_ts"):
-            # This is a reply in a thread - fetch thread history
-            thread_messages = fetch_thread_history(client_slack, channel_id, thread_ts)
+            thread_messages = fetch_thread_history(client, channel_id, thread_ts)
             conversation_messages = build_conversation_for_claude(thread_messages)
         else:
-            # New message, not in a thread yet
             conversation_messages = [{"role": "user", "content": user_query}]
-        
-        response = client.messages.create(
+
+        # Call Claude
+        response = anthropic_client.messages.create(
             model="claude-sonnet-4-20250514",
-            max_tokens=1024,
+            max_tokens=2048,
             system=SYSTEM_PROMPT,
             messages=conversation_messages
         )
+
         bot_reply = response.content[0].text
         say(text=bot_reply, thread_ts=thread_ts)
-        say("✓ View my reply in the thread above")
+
+    except anthropic.APIError as e:
+        logger.error(f"Anthropic API error: {e}")
+        say(
+            text="Sorry, I'm having trouble reaching the AI service right now. "
+                 "Please try again in a moment or contact norris@eminencegrey.ai.",
+            thread_ts=thread_ts
+        )
     except Exception as e:
-        logging.error(f"Error: {str(e)}")
-        say(text="Sorry, error occurred. Contact norris@eminencegrey.ai", thread_ts=message.get("thread_ts") or message.get("ts"))
+        logger.error(f"Unexpected error: {e}")
+        say(
+            text="Sorry, an error occurred. Please contact norris@eminencegrey.ai.",
+            thread_ts=thread_ts
+        )
+    finally:
+        # Clean up the processing indicator
+        if indicator and indicator.get("ok"):
+            try:
+                client.chat_delete(
+                    channel=channel_id,
+                    ts=indicator["ts"]
+                )
+            except Exception as e:
+                logger.debug(f"Could not delete processing indicator: {e}")
 
-web_app = Flask(__name__)
 
-@web_app.route('/')
-def ping():
-    return 'Bot is alive!', 200
+# ---------------------------------------------------------------------------
+# Health-check server (for UptimeRobot) — stdlib only, no Flask needed
+# ---------------------------------------------------------------------------
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"Bot is alive!")
 
-def run_webserver():
-    web_app.run(host='0.0.0.0', port=8080, debug=False)
+    def log_message(self, format, *args):
+        # Suppress default stderr logging for health checks
+        pass
 
+
+def run_health_server():
+    server = HTTPServer(("0.0.0.0", 8080), HealthHandler)
+    logger.info("Health-check server listening on :8080")
+    server.serve_forever()
+
+
+# ---------------------------------------------------------------------------
+# Entrypoint
+# ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    web_thread = threading.Thread(target=run_webserver, daemon=True)
-    web_thread.start()
-    handler = SocketModeHandler(app, os.environ.get("SLACK_APP_TOKEN"))
-    print("⚡️ Bolt app is running!")
+    resolve_bot_user_id()
+
+    health_thread = threading.Thread(target=run_health_server, daemon=True)
+    health_thread.start()
+
+    handler = SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"])
+    logger.info("⚡️ Bolt app is running!")
     handler.start()
