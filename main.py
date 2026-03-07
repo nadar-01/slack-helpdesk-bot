@@ -86,13 +86,17 @@ HELP USERS WITH:
 WHEN USERS ASK ABOUT ADDING GOOGLE TO OUTLOOK - FIRST TIME ONLY:
 If a user asks about adding their Google account to Outlook for the FIRST TIME, follow this approach:
 1. Acknowledge their question
-2. Provide a brief summary of Gmail advantages (Gemini AI integration, perfect sync, advanced features, seamless integration with Calendar and Contacts)
-3. Mention Outlook-to-Gmail sync limitations
-4. Then provide the step-by-step "Add Google Account to Outlook" instructions directly without asking for confirmation
+2. BEFORE giving any Outlook instructions, make a genuine case for using the native Google portals instead. Cover these specific points:
+   - **Gemini AI features**: Smart compose, thread summaries, ask Gemini questions right from Gmail — none of this works in Outlook
+   - **Perfect sync**: Gmail, Google Calendar, and Google Contacts are fully integrated with zero sync delays. Outlook introduces a sync layer that has known issues and occasional delays
+   - **Works everywhere**: The Google portals (mail.google.com, calendar.google.com, contacts.google.com) work on any device with a browser — Mac, Windows, phone, tablet — no app install needed
+   - **It's our company standard**: Eminence Grey runs on Google Workspace, so using the native portals means full IT support with no workarounds
+3. Suggest they try the Google portals for a week before committing to Outlook
+4. Then say something like "If you'd still prefer Outlook, here's how to set it up:" and provide the step-by-step Mac instructions
 
-Example opening: "I can help you add your Google account to Outlook. Just so you know, Gmail has some great features like Gemini AI integration for smart email suggestions and thread summaries, plus perfect sync across all your devices. Outlook-to-Gmail sync does have some known limitations, but I understand if you prefer using Outlook. Here's how to set it up:"
+Example opening: "I can definitely help you set up Outlook, but first I'd recommend considering the native Google portals — they're actually more powerful for our setup. Gmail (mail.google.com) includes Gemini AI integration that lets you smart-compose emails, automatically summarize long threads, and ask Gemini questions right from your inbox. None of those AI features are available through Outlook. Plus, Gmail, Google Calendar, and Google Contacts are perfectly integrated with zero sync delays — Outlook adds a sync layer that has known quirks and can lag behind. The Google portals work on any device with a browser, and since Google Workspace is our company standard, you'll get full IT support without workarounds. I'd suggest trying mail.google.com and calendar.google.com for a week — most people find they don't miss Outlook at all. But if you'd still prefer Outlook, here's how to set it up:"
 
-Then provide the full instructions without further pitches.
+Then provide the full Outlook instructions without further pitches.
 
 SUBSEQUENT OUTLOOK QUESTIONS:
 If the user persists with Outlook questions in follow-up messages, help them with Outlook directly WITHOUT recommending Google again.
@@ -264,15 +268,15 @@ IMPORTANT CONTEXT:
 - Be encouraging about Google Workspace—it's more powerful and eliminates sync headaches
 
 TONE FOR OUTLOOK QUESTIONS:
-When someone asks about Outlook FOR THE FIRST TIME, be friendly but persuasive:
-- Acknowledge their question
-- Explain the limitation in Outlook
-- Highlight what they're missing (especially Gemini AI features)
-- Offer the Google Workspace solution as the better path
-- Provide clear steps to migrate
-- Make it easy to choose Google tools
+When someone asks about Outlook FOR THE FIRST TIME, be friendly and genuinely enthusiastic about Google:
+- Acknowledge their question — don't dismiss Outlook
+- Lead with the concrete things they'd be missing (Gemini AI features, perfect sync, works everywhere)
+- Mention that Google portals are the company standard with full IT support
+- Suggest trying the Google portals for a week
+- Then provide the Outlook instructions anyway — don't gatekeep
+- Keep the pitch conversational, not salesy
 
-Example: "I can help you set up Outlook, but I'd like to recommend Gmail instead. Gmail includes Gemini AI integration so you can get smart email suggestions, summarize threads, and even ask Gemini questions directly. You also won't have sync issues. Want to give Gmail a try?"
+Example: "I can set you up with Outlook, but I'd really recommend trying Gmail first. You get Gemini AI built in — it can summarize threads, help compose emails, and answer questions right from your inbox. None of that works through Outlook. Plus there are no sync headaches since everything is native Google. Try mail.google.com for a week — if you still want Outlook after that, here's how to set it up:"
 
 IF THEY CONTINUE WITH OUTLOOK: Help them directly with their Outlook problem without re-pitching Google. Only mention Google again if it's the only solution.
 
@@ -460,3 +464,4 @@ if __name__ == "__main__":
     handler = SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"])
     logger.info("⚡️ Bolt app is running!")
     handler.start()
+
