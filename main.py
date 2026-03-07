@@ -68,17 +68,13 @@ HELP USERS WITH:
 WHEN USERS ASK ABOUT ADDING GOOGLE TO OUTLOOK - FIRST TIME ONLY:
 If a user asks about adding their Google account to Outlook for the FIRST TIME, follow this approach:
 1. Acknowledge their question
-2. Remind them that Gmail, Google Calendar, and Google Contacts are the primary tools and work seamlessly together
-3. Explain the advantages they'd be missing by using Outlook instead (Gemini AI integration, no sync issues, mobile reliability, unified experience)
-4. Describe the Outlook-to-Gmail sync limitations and potential issues
-5. **ASK THE USER:** "Are you sure you want to proceed with adding Google to Outlook? I'd recommend using Gmail, Google Calendar, and Google Contacts directly instead. Would you like to try those first, or do you want to continue with the Outlook setup instructions?"
-6. **Wait for their response.** 
-7. **If they confirm YES or say "Outlook"**, provide the step-by-step "Add Google Account to Outlook" instructions IMMEDIATELY without any further recommendations or re-pitching Google Workspace
-8. **If they say NO or ask about Gmail**, offer to help them get started with Gmail, Google Calendar, and Google Contacts instead
+2. Provide a brief summary of Gmail advantages (Gemini AI integration, perfect sync, advanced features, seamless integration with Calendar and Contacts)
+3. Mention Outlook-to-Gmail sync limitations
+4. Then provide the step-by-step "Add Google Account to Outlook" instructions directly without asking for confirmation
 
-Example response: "I can help you add Google to Outlook, but first I want to remind you that Gmail includes Gemini AI integration for smart email suggestions and thread summarization. Google Calendar has intelligent scheduling with Gemini, and everything syncs perfectly without the issues Outlook sometimes has with Gmail. Are you sure you want to proceed with Outlook, or would you like to try Gmail first?"
+Example opening: "I can help you add your Google account to Outlook. Just so you know, Gmail has some great features like Gemini AI integration for smart email suggestions and thread summaries, plus perfect sync across all your devices. Outlook-to-Gmail sync does have some known limitations, but I understand if you prefer using Outlook. Here's how to set it up:"
 
-CRITICAL: Once the user confirms they want to proceed with Outlook (step 7), STOP recommending Google Workspace and provide the instructions they asked for.
+Then provide the full instructions without further pitches.
 
 SUBSEQUENT OUTLOOK QUESTIONS:
 If the user persists with Outlook questions in follow-up messages, help them with Outlook directly WITHOUT recommending Google again.
@@ -271,8 +267,47 @@ ESCALATE TO: norris@eminencegrey.ai for:
 - Migration questions or new user onboarding
 - Users who insist on Outlook despite recommendations (note: some power users may have legacy workflows)"""
 
+def fetch_thread_history(slack_client, channel_id, thread_ts):
+    """Fetch all messages in a thread to provide context to Claude."""
+    try:
+        result = slack_client.conversations_replies(
+            channel=channel_id,
+            ts=thread_ts,
+            limit=100
+        )
+        return result.get("messages", [])
+    except Exception as e:
+        logging.error(f"Error fetching thread history: {str(e)}")
+        return []
+
+def build_conversation_for_claude(thread_messages):
+    """Convert Slack thread messages into format Claude can understand."""
+    messages = []
+    
+    for msg in thread_messages:
+        # Skip bot messages
+        if msg.get("bot_id"):
+            continue
+        
+        text = msg.get("text", "").strip()
+        if not text:
+            continue
+        
+        # Determine if from user or bot
+        if "helpdesk" in msg.get("username", "").lower() or msg.get("app_id"):
+            role = "assistant"
+        else:
+            role = "user"
+        
+        messages.append({
+            "role": role,
+            "content": text
+        })
+    
+    return messages
+
 @app.message()
-def handle_message(message, say):
+def handle_message(message, say, client_slack):
     if message.get("bot_id"):
         return
     user_query = message.get("text", "")
@@ -280,18 +315,32 @@ def handle_message(message, say):
         return
     try:
         say("_Processing your message..._")
+        
+        # Get thread context if this is a threaded message
+        thread_ts = message.get("thread_ts") or message.get("ts")
+        channel_id = message.get("channel")
+        
+        conversation_messages = []
+        if message.get("thread_ts"):
+            # This is a reply in a thread - fetch thread history
+            thread_messages = fetch_thread_history(client_slack, channel_id, thread_ts)
+            conversation_messages = build_conversation_for_claude(thread_messages)
+        else:
+            # New message, not in a thread yet
+            conversation_messages = [{"role": "user", "content": user_query}]
+        
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
             max_tokens=1024,
             system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_query}]
+            messages=conversation_messages
         )
         bot_reply = response.content[0].text
-        say(text=bot_reply, thread_ts=message.get("ts"))
+        say(text=bot_reply, thread_ts=thread_ts)
         say("✓ View my reply in the thread above")
     except Exception as e:
         logging.error(f"Error: {str(e)}")
-        say(text="Sorry, error occurred. Contact norris@eminencegrey.ai", thread_ts=message.get("ts"))
+        say(text="Sorry, error occurred. Contact norris@eminencegrey.ai", thread_ts=message.get("thread_ts") or message.get("ts"))
 
 web_app = Flask(__name__)
 
