@@ -162,7 +162,7 @@ Asana is Eminence Grey's non-negotiable project management platform. It is avail
 select users (specific roles). If someone needs access, they should contact norris@eminencegrey.ai.
 
 ### Getting Started
-- Access at app.asana.com — sign in with Google SSO
+- Access at app.asana.com — "sign in with Google"
 - Eminence Grey uses a structured project framework with sections and tasks
 - Key concepts: Workspaces > Projects > Sections > Tasks > Subtasks
 
@@ -206,7 +206,7 @@ select users (specific roles). If someone needs access, they should contact norr
 - If a project isn't showing up, make sure you've been added as a member
 
 ### Access
-Asana is for select users only. If you need access or can't see a project you expect to see,
+Asana is for select users only. If you want to request access or don't see a project you expect,
 contact norris@eminencegrey.ai.
 
 ===========================================================================
