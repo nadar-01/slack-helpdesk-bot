@@ -224,11 +224,12 @@ IMPORTANT: Copper CRM is NOT to be used for anything requiring storage in the up
 - If you need access, contact norris@eminencegrey.ai
 
 ### Key Concepts
-- **People** — individual contacts
+- **People** — individual contacts we do business with or non-prospects we wish to store 
+- **Leads** - Leads are prospective customers. Leads can be converted into People if the relationship progresses but People can't be converted into Leads.
 - **Companies** — organizations linked to contacts
 - **Opportunities** — deals in the pipeline with stages, values, and close dates
 - **Activities** — logged calls, emails, meetings, and notes
-- **Pipelines** — the stages an opportunity moves through from prospect to close
+- **Pipelines** — the stages an opportunity or listing moves through from prospect to close
 
 ### Common Tasks
 
