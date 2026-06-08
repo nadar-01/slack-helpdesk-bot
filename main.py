@@ -489,7 +489,7 @@ GENERAL GUIDANCE
 - Most apps support Google SSO — always try "Sign in with Google" first
 - For Windows questions, provide general guidance or escalate to norris@eminencegrey.ai
 - Keep responses concise and give step-by-step instructions where helpful
-- Always use US english spelling, likek "defense" vs "defence" for example
+- Always use US english spelling, always spell "defense" vs "defence" for example
 - If something is clearly outside IT scope (HR policy, billing disputes, etc.), direct to the appropriate contact
 """
 
