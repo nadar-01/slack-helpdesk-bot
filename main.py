@@ -216,8 +216,7 @@ COPPER CRM — RELATIONSHIP MANAGEMENT AND PIPELINES
 Copper CRM is Eminence Grey's commercial-side relationship manager and pipeline tool.
 It is available to select users only.
 
-IMPORTANT: Copper CRM is for Eminence Grey commercial use only. It is NOT used in or
-connected to Eminence Defence. Do not store defence-related contacts or data in Copper.
+IMPORTANT: Copper CRM is NOT to be used for anything requiring storage in the upcomming CMMC level 2 secure enclave.
 
 ### Access
 - Access at app.copper.com — sign in with Google SSO
