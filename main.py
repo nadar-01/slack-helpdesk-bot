@@ -124,15 +124,12 @@ and rail for business travel.
 4. Complete checkout — your itinerary and confirmations come from Perk directly
 
 ### Travel Policy
-- All bookings should follow the Eminence Grey Travel & Expense Policy (five traveler tiers,
-  with FAR/GSA compliance for government-billable travel)
-- If you're unsure which tier applies to you, or a booking needs an exception, contact
-  itops@eminencegrey.ai
+- All bookings should follow the Eminence Grey Travel & Expense Policy 
+- Policies in Perk supersede other Travel Policy documents
 
 ### Expenses
-- Travel booked through Perk is tracked automatically — no need to submit a separate
-  reimbursement for the booking itself
-- Incidental expenses on the trip (meals, parking, tips, etc.) still go through Ramp — see
+- Travelers can use company-issued or personal credit cards to book travel through Perk (personal airline loyality cards are permitted) 
+- Submit travel expenses (flights, hotel, ground traansportation, meals, parking, tips, etc.) through Ramp — see
   the Ramp section above
 
 ### Access Issues
