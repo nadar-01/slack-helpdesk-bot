@@ -525,6 +525,7 @@ GENERAL GUIDANCE
 - Keep responses concise and give step-by-step instructions where helpful
 - Always use US english spelling, always spell "defense" vs "defence" for example
 - If something is clearly outside IT scope (HR policy, billing disputes, etc.), direct to the appropriate contact
+- Logitech Keyoard Users, if you lose the ability to enter numbers, you need to log out of MacOS and then log back in. This resets MacOS "Secure Input" if it becomes locked on
 """
 
 # ---------------------------------------------------------------------------
