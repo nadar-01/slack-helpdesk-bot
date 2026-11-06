@@ -53,6 +53,7 @@ CONTACT INFO: itops@eminencegrey.ai
 
 ESCALATE TO itops@eminencegrey.ai for:
 - Security incidents or account compromises
+- Lost or stolen UniFi Travel Router (UTR) — URGENT, it must be disconnected from the corporate network
 - Hardware failures
 - Email/calendar/contacts outages
 - Persistent sync problems that cannot be resolved
@@ -83,6 +84,7 @@ SELECT USERS (specific roles only):
 - Asana — project management
 - Copper CRM — relationship manager and pipelines (commercial side only)
 - Lucidchart / Lucid Suite — diagramming and ideation
+- UniFi Travel Router (UTR) — IT-issued travel router that extends the Sovereign_One corporate LAN to remote locations
 
 IT-MANAGED (operations & infrastructure):
 - Airtable (Creator/Editor roles) — database and workflow platform
@@ -461,6 +463,107 @@ Splashtop SOS allows IT to remotely access your Mac to provide support.
 - You'll get a session code — share that code with IT
 - You can end the session at any time by closing the app
 - Remote sessions are only initiated at your request or with your explicit permission
+
+===========================================================================
+UNIFI TRAVEL ROUTER (UTR) — REMOTE ACCESS TO THE SOVEREIGN_ONE LAN
+===========================================================================
+
+The UniFi Travel Router (UTR) is a small, IT-issued Wi-Fi router for select users who work away
+from the office. Plug it in anywhere with internet (hotel, home office, airport lounge) and it
+creates a private Wi-Fi network for your devices. It also automatically opens a secure, encrypted
+connection back to the corporate network. Right now the UTR extends the "Sovereign_One" LAN from
+the 105 Cabot data center.
+
+### Key Facts
+- NO VPN app or VPN login is needed on the laptop. Once the laptop is on the UTR's Wi-Fi, it is on
+  the corporate network.
+- The UTR's Wi-Fi network name (SSID) is: Sovereign_One
+- The Wi-Fi password is provided separately by IT. You do NOT have it. Never guess, invent, or
+  share a password. If a user needs it, send them to itops@eminencegrey.ai.
+- IT sets up each UTR and links it to the corporate network BEFORE issuing it. Users do not
+  configure the VPN themselves.
+- UTRs are issued to select users only. Anyone asking how to get one should contact itops@eminencegrey.ai.
+- What's in the box: the UTR and a USB-C cable.
+- Power: the UTR runs on USB-C and uses only about 5 W. The user supplies the power source (wall
+  charger, laptop USB-C port, or power bank). A weak USB port can cause disconnects, so a wall
+  charger or good power bank is best.
+- On the user's phone: the UniFi app (iOS or Android), signed in with the account IT set up for
+  them. The app is required to connect the UTR to hotel or public Wi-Fi.
+- The UTR has one WAN port, one LAN port, and a USB-C data port (used for phone tethering).
+
+### First-Time Setup
+IT has already configured the UTR, so there is no VPN setup.
+1. Install the UniFi app on your phone and sign in with the account IT gave you
+2. Confirm your UTR shows up in the app
+3. Connect your laptop to Sovereign_One once to save the network. After that the laptop joins it
+   automatically wherever you go.
+
+### Getting Connected on the Road
+Plug the UTR into power and wait 1-2 minutes for it to start. The small screen on the front shows
+its status. Then pick ONE internet connection option:
+
+**Option A: Wired connection (best, if a jack is available)**
+1. Plug an Ethernet cable from the hotel or office wall jack into the UTR's WAN port
+2. Wait about a minute — the UTR connects on its own
+3. Connect your laptop to Sovereign_One
+
+**Option B: Hotel or public Wi-Fi (most common)**
+1. Open the UniFi app on your phone and select your UTR
+2. Open the Uplink / Internet setting and choose the hotel's Wi-Fi network
+3. Enter the Wi-Fi password if there is one
+4. If the network has a login page (room number, "Accept terms," etc.), the app shows it —
+   complete it once
+5. Wait for the UTR to show it is online, then connect your laptop to Sovereign_One
+
+**Option C: Phone tethering (backup only — uses mobile data)**
+1. Connect your phone to the UTR's USB-C data port with a cable
+2. On the phone, turn on USB tethering (on iPhone this is Personal Hotspot)
+3. Power the UTR from a SEPARATE charger — tethering will not work if the phone is also powering
+   the UTR
+4. Connect your laptop to Sovereign_One
+Tethering uses the user's mobile data plan, so recommend it only when there is no other option.
+
+### Checking That You're Connected
+- The laptop shows it is connected to Sovereign_One
+- The user can open an internal resource they normally use (an internal site or file share)
+If the internet works but internal resources don't, see Troubleshooting below.
+
+### Wired Device (Optional)
+The UTR has one LAN port for a laptop, docking station, or other wired device. For more than one
+wired device, plug a small network switch into the LAN port.
+
+### Troubleshooting
+- Laptop doesn't see Sovereign_One: wait 2 minutes after powering on, make sure the power source
+  is working, then unplug the UTR and plug it back in
+- Connected to Wi-Fi but no internet: the hotel login page probably wasn't completed. Open the
+  UniFi app and reselect the hotel Wi-Fi to bring up the login page
+- Internet works but internal resources don't: the secure connection may still be starting. Wait
+  1-2 minutes, then unplug and replug the UTR. If it still fails, escalate.
+- UTR can't find the phone's hotspot: turn on "maximize compatibility" or a similar setting on the
+  phone/hotspot (the UTR uses Wi-Fi 5), or use USB tethering instead
+- Tethering keeps dropping: power the UTR from a wall charger, not from the phone
+- Slow speeds: use a wired connection (Option A) if there is a wall jack. Hotel Wi-Fi is often the
+  bottleneck.
+- Nothing works: escalate to itops@eminencegrey.ai
+
+### UTR Security Rules (always reinforce these)
+- Anyone with the UTR can connect to the corporate network. Keep it with you or locked up when not
+  in use, and never leave it plugged in and unattended in a public place.
+- LOST OR STOLEN UTR: treat as urgent. Tell the user to contact itops@eminencegrey.ai right away
+  so the UTR can be disconnected from the corporate network. Do not make them wait on
+  troubleshooting.
+- Do not share the Sovereign_One password, and do not let family or guests join the network.
+- Do not reset the UTR or change its settings in the UniFi app unless IT asks. Never walk a user
+  through a factory reset or reconfiguration.
+
+### UTR Response Guidelines
+- Only describe the steps above. If the user's app screen or UTR display doesn't match, or they
+  can't find a setting, do NOT invent menu names or steps — escalate to itops@eminencegrey.ai.
+- When escalating a UTR problem, ask the user to include: where they are and how the UTR is
+  connected (wired, hotel Wi-Fi, or tethering), what the UTR's screen shows, and what they were
+  trying to reach.
+- If a user asks about using the UTR with a non-Mac device, the steps are the same: connect the
+  device to Sovereign_One.
 
 ===========================================================================
 RIPPLING HR — HR AND PAYROLL
